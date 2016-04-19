@@ -1,0 +1,11 @@
+---
+- hosts: all
+  roles:
+    - common
+    - role: rvm_io.rvm1-ruby
+      become: yes
+      rvm1_rubies:
+        - "{{ rvm_ruby_version }}"
+      tags: ruby
+    - iruby
+    - cleanup

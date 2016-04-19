@@ -1,0 +1,48 @@
+---
+- name: Install packages
+  apt: pkg={{ item }} state=latest
+  become: yes
+  with_items:
+    - libzmq3-dev
+    - python-dev
+    - python-pip
+    - python3-dev
+
+- name: Upgrade pip
+  become: yes
+  pip: name=pip state=latest
+
+- name: Install virtualenv
+  become: yes
+  pip: name={{ item }} state=latest
+  with_items:
+    - virtualenv
+
+- name: Create and install packages for ipython notebook
+  pip:
+    requirements: /vagrant/requirements.txt
+    virtualenv: /home/vagrant/venvs/iruby
+    virtualenv_python: python3
+
+- name: Install IRuby gems
+  become: yes
+  command: /bin/bash -l -c 'gem install {{ item }}'
+  with_items:
+    - rbczmq
+    - iruby
+    - pry
+    - rmagick
+    - rubyvis
+    - gruff
+
+- name: Create app directory for notebook
+  file: path=/vagrant/notebook state=directory
+  tags: notebook
+
+- name: Start in /vagrant/notebook directory when ssh
+  lineinfile: dest=/home/vagrant/.bashrc regexp='^cd /vagrant/notebook$' line="cd /vagrant/notebook" state=present
+  tags: .bashrc
+
+- name: Activate iruby venv when ssh
+  lineinfile: dest=/home/vagrant/.bashrc regexp='^source ~/venvs/iruby/bin/activate$' line="source ~/venvs/iruby/bin/activate" state=present
+  tags: .bashrc
